@@ -2,6 +2,7 @@ package az.spring.ecommerce.security;
 
 import az.spring.ecommerce.model.User;
 import az.spring.ecommerce.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 
+@Slf4j
 @Service
 public class UserDetailServiceImpl implements UserDetailsService {
 
@@ -22,6 +24,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        log.info("Inside loadUserByUsername {}", username);
         User user = userRepository.findFirstByEmail(username);
         userDetail = userRepository.findFirstByEmail(username);
         if (user == null) throw new UsernameNotFoundException("Username not found.");
