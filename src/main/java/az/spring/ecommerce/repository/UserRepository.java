@@ -21,4 +21,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Modifying
     Integer updateStatus(@Param("status") String status, @Param("id") Integer id);
 
+    List<String> getAllAdmin();
+
 }

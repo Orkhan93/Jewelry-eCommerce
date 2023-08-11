@@ -9,6 +9,8 @@ import az.spring.ecommerce.security.JwtRequestFilter;
 import az.spring.ecommerce.security.JwtUtil;
 import az.spring.ecommerce.security.UserDetailServiceImpl;
 import az.spring.ecommerce.utils.CommerceUtil;
+import az.spring.ecommerce.utils.EmailUtil;
+
 import az.spring.ecommerce.wrapper.UserWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +37,7 @@ public class UserService {
     private final UserDetailServiceImpl userDetailService;
     private final JwtUtil jwtUtil;
     private final JwtRequestFilter jwtRequestFilter;
+    private final EmailUtil emailUtil;
 
     public ResponseEntity<String> signUp(UserSignUpRequest userSignUpRequest) {
         log.info("Inside signup {}", userSignUpRequest);
@@ -106,6 +109,8 @@ public class UserService {
                 Optional<User> optionalUser = userRepository.findById(Long.valueOf(userSignUpRequest.getId()));
                 if (!optionalUser.isEmpty()) {
                     userRepository.updateStatus(userSignUpRequest.getStatus(), userSignUpRequest.getId());
+                    sendMailToAllAdmin(userSignUpRequest.getStatus(), optionalUser.get().getEmail(), userRepository.getAllAdmin());
+
                     return CommerceUtil.getResponseMessage("User Status Updated Successfully.", HttpStatus.OK);
                 } else {
                     CommerceUtil.getResponseMessage("User id doesn't exist.", HttpStatus.OK);
@@ -118,4 +123,18 @@ public class UserService {
         }
         return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    private void sendMailToAllAdmin(String status, String user, List<String> allAdmin) {
+        allAdmin.remove(jwtRequestFilter.getCurrentUser());
+        if (status != null && status.equalsIgnoreCase("true")) {
+            emailUtil.sendSimpleMessage(jwtRequestFilter.getCurrentUser(),
+                    "Account Approved.", "USER:- " + user + "\n is approved by \nADMIN:-"
+                            + jwtRequestFilter.getCurrentUser(), allAdmin);
+        } else {
+            emailUtil.sendSimpleMessage(jwtRequestFilter.getCurrentUser(),
+                    "Account Disabled.", "USER:- " + user + "\n is disabled by \nADMIN:-"
+                            + jwtRequestFilter.getCurrentUser(), allAdmin);
+        }
+    }
+
 }
