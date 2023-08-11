@@ -5,9 +5,12 @@ import az.spring.ecommerce.mappers.UserMapper;
 import az.spring.ecommerce.model.User;
 import az.spring.ecommerce.repository.UserRepository;
 import az.spring.ecommerce.request.UserSignUpRequest;
+import az.spring.ecommerce.security.JwtRequestFilter;
 import az.spring.ecommerce.security.JwtUtil;
 import az.spring.ecommerce.security.UserDetailServiceImpl;
 import az.spring.ecommerce.utils.CommerceUtil;
+import az.spring.ecommerce.utils.EmailUtil;
+import az.spring.ecommerce.wrapper.UserWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -17,7 +20,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -29,6 +35,8 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final UserDetailServiceImpl userDetailService;
     private final JwtUtil jwtUtil;
+    private final JwtRequestFilter jwtRequestFilter;
+    private final EmailUtil emailUtil;
 
     public ResponseEntity<String> signUp(UserSignUpRequest userSignUpRequest) {
         log.info("Inside signup {}", userSignUpRequest);
@@ -72,6 +80,19 @@ public class UserService {
         return new ResponseEntity<String>("Bad Credentials.", HttpStatus.BAD_REQUEST);
     }
 
+    public ResponseEntity<List<UserWrapper>> getAllUser() {
+        try {
+            if (jwtRequestFilter.isAdmin()) {
+                return new ResponseEntity<>(userRepository.getAllUser(), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(new ArrayList<>(), HttpStatus.UNAUTHORIZED);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     private boolean validationSignUp(UserSignUpRequest signUpRequest) {
         log.info("Inside signUpRequest {}", signUpRequest);
         if (signUpRequest.getName() != null && signUpRequest.getEmail() != null
@@ -79,6 +100,39 @@ public class UserService {
             return true;
         }
         return false;
+    }
+
+    public ResponseEntity<String> update(UserSignUpRequest userSignUpRequest) {
+        try {
+            if (jwtRequestFilter.isAdmin()) {
+                Optional<User> optionalUser = userRepository.findById(Long.valueOf(userSignUpRequest.getId()));
+                if (!optionalUser.isEmpty()) {
+                    userRepository.updateStatus(userSignUpRequest.getStatus(), userSignUpRequest.getId());
+                    sendMailToAllAdmin(userSignUpRequest.getStatus(), optionalUser.get().getEmail(), userRepository.getAllAdmin());
+                    return CommerceUtil.getResponseMessage("User Status Updated Successfully.", HttpStatus.OK);
+                } else {
+                    CommerceUtil.getResponseMessage("User id doesn't exist.", HttpStatus.OK);
+                }
+            } else {
+                return CommerceUtil.getResponseMessage(CommerceConstant.UNAUTHORIZED_ACCESS, HttpStatus.UNAUTHORIZED);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private void sendMailToAllAdmin(String status, String user, List<String> allAdmin) {
+        allAdmin.remove(jwtRequestFilter.getCurrentUser());
+        if (status != null && status.equalsIgnoreCase("true")) {
+            emailUtil.sendSimpleMessage(jwtRequestFilter.getCurrentUser(),
+                    "Account Approved.", "USER:- " + user + "\n is approved by \nADMIN:-"
+                            + jwtRequestFilter.getCurrentUser(), allAdmin);
+        } else {
+            emailUtil.sendSimpleMessage(jwtRequestFilter.getCurrentUser(),
+                    "Account Disabled.", "USER:- " + user + "\n is disabled by \nADMIN:-"
+                            + jwtRequestFilter.getCurrentUser(), allAdmin);
+        }
     }
 
 }
