@@ -10,6 +10,7 @@ import az.spring.ecommerce.security.JwtUtil;
 import az.spring.ecommerce.security.UserDetailServiceImpl;
 import az.spring.ecommerce.utils.CommerceUtil;
 import az.spring.ecommerce.utils.EmailUtil;
+
 import az.spring.ecommerce.wrapper.UserWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -109,6 +110,7 @@ public class UserService {
                 if (!optionalUser.isEmpty()) {
                     userRepository.updateStatus(userSignUpRequest.getStatus(), userSignUpRequest.getId());
                     sendMailToAllAdmin(userSignUpRequest.getStatus(), optionalUser.get().getEmail(), userRepository.getAllAdmin());
+
                     return CommerceUtil.getResponseMessage("User Status Updated Successfully.", HttpStatus.OK);
                 } else {
                     CommerceUtil.getResponseMessage("User id doesn't exist.", HttpStatus.OK);
