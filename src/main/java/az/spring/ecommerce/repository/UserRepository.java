@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Integer> {
 
     User findFirstByEmail(String email);
 
@@ -22,5 +22,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Integer updateStatus(@Param("status") String status, @Param("id") Integer id);
 
     List<String> getAllAdmin();
+
+    User findByEmail(String email);
 
 }

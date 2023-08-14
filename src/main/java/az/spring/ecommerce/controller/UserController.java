@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
@@ -58,7 +59,37 @@ public class UserController {
     @PostMapping("/update")
     public ResponseEntity<String> update(@RequestBody UserSignUpRequest userSignUpRequest) {
         try {
-             return userService.update(userSignUpRequest);
+            return userService.update(userSignUpRequest);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @GetMapping("/checkToken")
+    public ResponseEntity<String> checkToken() {
+        try {
+            return userService.checkToken();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @PostMapping("/changePassword")
+    public ResponseEntity<String> changePassword(@RequestBody Map<String, String> requestMap) {
+        try {
+            return userService.changePassword(requestMap);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @PostMapping("/forgotPassword")
+    public ResponseEntity<String> forgotPassword(@RequestBody UserSignUpRequest userSignUpRequest) {
+        try {
+            return userService.forgotPassword(userSignUpRequest);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
