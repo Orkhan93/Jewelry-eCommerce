@@ -10,8 +10,8 @@ import az.spring.ecommerce.security.JwtUtil;
 import az.spring.ecommerce.security.UserDetailServiceImpl;
 import az.spring.ecommerce.utils.CommerceUtil;
 import az.spring.ecommerce.utils.EmailUtil;
-
 import az.spring.ecommerce.wrapper.UserWrapper;
+import com.google.common.base.Strings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -106,11 +107,10 @@ public class UserService {
     public ResponseEntity<String> update(UserSignUpRequest userSignUpRequest) {
         try {
             if (jwtRequestFilter.isAdmin()) {
-                Optional<User> optionalUser = userRepository.findById(Long.valueOf(userSignUpRequest.getId()));
+                Optional<User> optionalUser = userRepository.findById(userSignUpRequest.getId());
                 if (!optionalUser.isEmpty()) {
                     userRepository.updateStatus(userSignUpRequest.getStatus(), userSignUpRequest.getId());
                     sendMailToAllAdmin(userSignUpRequest.getStatus(), optionalUser.get().getEmail(), userRepository.getAllAdmin());
-
                     return CommerceUtil.getResponseMessage("User Status Updated Successfully.", HttpStatus.OK);
                 } else {
                     CommerceUtil.getResponseMessage("User id doesn't exist.", HttpStatus.OK);
@@ -135,6 +135,41 @@ public class UserService {
                     "Account Disabled.", "USER:- " + user + "\n is disabled by \nADMIN:-"
                             + jwtRequestFilter.getCurrentUser(), allAdmin);
         }
+    }
+
+    public ResponseEntity<String> checkToken() {
+        return CommerceUtil.getResponseMessage("true", HttpStatus.OK);
+    }
+
+    public ResponseEntity<String> changePassword(Map<String, String> requestMap) {
+        try {
+            User userObject = userRepository.findByEmail(jwtRequestFilter.getCurrentUser());
+            if (userObject != null) {
+                if (userObject.getPassword().equals(requestMap.get("oldPassword"))) {
+                    userObject.setPassword(requestMap.get("newPassword"));
+                    userRepository.save(userObject);
+                    return CommerceUtil.getResponseMessage("Password Updated Successfully.", HttpStatus.OK);
+                }
+                return CommerceUtil.getResponseMessage("Incorrect Old Password", HttpStatus.BAD_REQUEST);
+            }
+            return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<String> forgotPassword(UserSignUpRequest userSignUpRequest) {
+        try {
+            User user = userRepository.findByEmail(userSignUpRequest.getEmail());
+            if (!Objects.isNull(user) && !Strings.isNullOrEmpty(user.getEmail()))
+                emailUtil.forgetMail(user.getEmail(), "Credentials by E-commerce", user.getPassword());
+            return CommerceUtil.getResponseMessage("Check your mail for Credentials.", HttpStatus.OK);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }
