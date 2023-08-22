@@ -1,12 +1,10 @@
 package az.spring.ecommerce.controller;
 
 import az.spring.ecommerce.constant.CommerceConstant;
-import az.spring.ecommerce.mappers.ProductMapper;
-import az.spring.ecommerce.model.Product;
-import az.spring.ecommerce.request.ProductRequest;
-import az.spring.ecommerce.service.ProductService;
+import az.spring.ecommerce.model.Category;
+import az.spring.ecommerce.request.CategoryRequest;
+import az.spring.ecommerce.service.CategoryService;
 import az.spring.ecommerce.utils.CommerceUtil;
-import az.spring.ecommerce.wrapper.ProductWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,42 +12,43 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/product")
+@RequestMapping("/category")
 @RequiredArgsConstructor
-public class ProductController {
+public class CategoryController {
 
-    private final ProductService productService;
+    private final CategoryService categoryService;
 
     @PostMapping("/add")
-    public ResponseEntity<String> addProduct(@RequestBody ProductRequest productRequest) {
+    public ResponseEntity<String> addCategory(@RequestBody CategoryRequest categoryRequest) {
         try {
-            return productService.addProduct(productRequest);
+            return categoryService.addCategory(categoryRequest);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @GetMapping("get")
-    public ResponseEntity<List<ProductWrapper>> getAllProduct() {
+    @GetMapping("/get")
+    public ResponseEntity<List<Category>> getAllCategory(@RequestParam(required = false) String filterValue) {
         try {
-            return productService.getAllProduct();
+            return categoryService.getAllCategory(filterValue);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @PostMapping("update")
-    public ResponseEntity<String> updateProduct(@RequestBody ProductRequest productRequest) {
+    @PostMapping("/update")
+    public ResponseEntity<String> updateCategory(@RequestBody CategoryRequest categoryRequest) {
         try {
-            return productService.updateProduct(productRequest);
+            return categoryService.updateCategory(categoryRequest);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
