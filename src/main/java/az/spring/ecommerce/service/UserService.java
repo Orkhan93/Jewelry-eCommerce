@@ -106,6 +106,10 @@ public class UserService {
                             optionalUser.get().getEmail(), userRepository.getAllAdmin());
                     return CommerceUtil.getResponseMessage
                             ("User Status Updated Successfully.", HttpStatus.OK);
+                 
+                    sendMailToAllAdmin(userSignUpRequest.getStatus(), optionalUser.get().getEmail(), userRepository.getAllAdmin());
+                    return CommerceUtil.getResponseMessage("User Status Updated Successfully.", HttpStatus.OK);
+
                 } else {
                     CommerceUtil.getResponseMessage("User id doesn't exist.", HttpStatus.OK);
                 }
@@ -116,6 +120,64 @@ public class UserService {
             ex.printStackTrace();
         }
         return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<String> checkToken() {
+        return CommerceUtil.getResponseMessage("true", HttpStatus.OK);
+    }
+
+    public ResponseEntity<String> changePassword(Map<String, String> requestMap) {
+        try {
+            User userObject = userRepository.findByEmail(jwtRequestFilter.getCurrentUser());
+            if (userObject != null) {
+                if (userObject.getPassword().equals(requestMap.get("oldPassword"))) {
+                    userObject.setPassword(requestMap.get("newPassword"));
+                    userRepository.save(userObject);
+                    return CommerceUtil.getResponseMessage("Password Updated Successfully.", HttpStatus.OK);
+                }
+                return CommerceUtil.getResponseMessage("Incorrect Old Password", HttpStatus.BAD_REQUEST);
+            }
+            return CommerceUtil.getResponseMessage
+                    (CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<String> forgotPassword(UserSignUpRequest userSignUpRequest) {
+        try {
+            User user = userRepository.findByEmail(userSignUpRequest.getEmail());
+            if (!Objects.isNull(user) && !Strings.isNullOrEmpty(user.getEmail()))
+                emailUtil.forgetMail(user.getEmail(), "Credentials by E-commerce", user.getPassword());
+            return CommerceUtil.getResponseMessage("Check your mail for Credentials.", HttpStatus.OK);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private boolean validationSignUp(UserSignUpRequest signUpRequest) {
+        log.info("Inside signUpRequest {}", signUpRequest);
+        if (signUpRequest.getName() != null && signUpRequest.getEmail() != null
+                && signUpRequest.getContactNumber() != null && signUpRequest.getPassword() != null) {
+            return true;
+        }
+        return false;
+    }
+
+    private void sendMailToAllAdmin(String status, String user, List<String> allAdmin) {
+        allAdmin.remove(jwtRequestFilter.getCurrentUser());
+        if (status != null && status.equalsIgnoreCase("true")) {
+            emailUtil.sendSimpleMessage(jwtRequestFilter.getCurrentUser(),
+                    "Account Approved.", "USER:- " + user + "\n is approved by \nADMIN:-"
+                            + jwtRequestFilter.getCurrentUser(), allAdmin);
+        } else {
+            emailUtil.sendSimpleMessage(jwtRequestFilter.getCurrentUser(),
+                    "Account Disabled.", "USER:- " + user + "\n is disabled by \nADMIN:-"
+                            + jwtRequestFilter.getCurrentUser(), allAdmin);
+        }
     }
 
     public ResponseEntity<String> checkToken() {
