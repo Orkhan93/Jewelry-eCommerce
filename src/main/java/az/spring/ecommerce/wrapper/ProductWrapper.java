@@ -12,7 +12,10 @@ public class ProductWrapper {
     private Long id;
     private String name;
     private String description;
-    private Integer price;
     private String size;
+    private Integer price;
+    private String status;
+    private Long categoryId;
+    private String categoryName;
 
 }

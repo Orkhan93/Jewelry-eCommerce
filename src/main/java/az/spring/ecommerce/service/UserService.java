@@ -102,12 +102,11 @@ public class UserService {
                 Optional<User> optionalUser = userRepository.findById(userSignUpRequest.getId());
                 if (!optionalUser.isEmpty()) {
                     userRepository.updateStatus(userSignUpRequest.getStatus(), userSignUpRequest.getId());
-
                     sendMailToAllAdmin(userSignUpRequest.getStatus(),
                             optionalUser.get().getEmail(), userRepository.getAllAdmin());
                     return CommerceUtil.getResponseMessage
                             ("User Status Updated Successfully.", HttpStatus.OK);
-                  
+                 
                     sendMailToAllAdmin(userSignUpRequest.getStatus(), optionalUser.get().getEmail(), userRepository.getAllAdmin());
                     return CommerceUtil.getResponseMessage("User Status Updated Successfully.", HttpStatus.OK);
 
@@ -196,7 +195,8 @@ public class UserService {
                 }
                 return CommerceUtil.getResponseMessage("Incorrect Old Password", HttpStatus.BAD_REQUEST);
             }
-            return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+            return CommerceUtil.getResponseMessage
+                    (CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
 
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -214,6 +214,28 @@ public class UserService {
             ex.printStackTrace();
         }
         return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private boolean validationSignUp(UserSignUpRequest signUpRequest) {
+        log.info("Inside signUpRequest {}", signUpRequest);
+        if (signUpRequest.getName() != null && signUpRequest.getEmail() != null
+                && signUpRequest.getContactNumber() != null && signUpRequest.getPassword() != null) {
+            return true;
+        }
+        return false;
+    }
+
+    private void sendMailToAllAdmin(String status, String user, List<String> allAdmin) {
+        allAdmin.remove(jwtRequestFilter.getCurrentUser());
+        if (status != null && status.equalsIgnoreCase("true")) {
+            emailUtil.sendSimpleMessage(jwtRequestFilter.getCurrentUser(),
+                    "Account Approved.", "USER:- " + user + "\n is approved by \nADMIN:-"
+                            + jwtRequestFilter.getCurrentUser(), allAdmin);
+        } else {
+            emailUtil.sendSimpleMessage(jwtRequestFilter.getCurrentUser(),
+                    "Account Disabled.", "USER:- " + user + "\n is disabled by \nADMIN:-"
+                            + jwtRequestFilter.getCurrentUser(), allAdmin);
+        }
     }
 
 }

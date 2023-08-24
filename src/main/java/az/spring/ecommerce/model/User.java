@@ -8,8 +8,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import lombok.Data;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
 
 @NamedQuery(name = "User.findFirstByEmail" , query = "select  u from User u where u.email=:email")
 @NamedQuery(name = "User.getAllUser" , query = "select new az.spring.ecommerce.wrapper.UserWrapper(u.id,u.name,u.email,u.contactNumber,u.status) from User u where u.userRole='user'")
