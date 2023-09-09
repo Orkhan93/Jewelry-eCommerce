@@ -18,4 +18,16 @@ public class ProductWrapper {
     private Long categoryId;
     private String categoryName;
 
+    public ProductWrapper(Long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public ProductWrapper(Long id, String name, String description, Integer price) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+    }
+
 }
