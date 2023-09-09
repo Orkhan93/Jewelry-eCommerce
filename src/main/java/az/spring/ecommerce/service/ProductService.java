@@ -62,7 +62,7 @@ public class ProductService {
                         productsRepository.save(product);
                         return CommerceUtil.getResponseMessage("Product Updated Successfully.", HttpStatus.OK);
                     } else
-                        return CommerceUtil.getResponseMessage("Product id does not exist.", HttpStatus.OK);
+                        return CommerceUtil.getResponseMessage(CommerceConstant.PRODUCT_ID_DOES_NOT_EXIST, HttpStatus.OK);
                 } else
                     return CommerceUtil.getResponseMessage(CommerceConstant.INVALID_DATA, HttpStatus.BAD_REQUEST);
             } else
@@ -71,6 +71,58 @@ public class ProductService {
             ex.printStackTrace();
         }
         return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<String> deleteProduct(Long id) {
+        try {
+            if (jwtRequestFilter.isAdmin()) {
+                Optional<Product> optionalProduct = productsRepository.findById(id);
+                if (!optionalProduct.isEmpty()) {
+                    productsRepository.deleteById(id);
+                    return CommerceUtil.getResponseMessage("Product Deleted Successfully.", HttpStatus.OK);
+                } else
+                    return CommerceUtil.getResponseMessage(CommerceConstant.PRODUCT_ID_DOES_NOT_EXIST, HttpStatus.OK);
+            } else
+                return CommerceUtil.getResponseMessage(CommerceConstant.UNAUTHORIZED_ACCESS, HttpStatus.UNAUTHORIZED);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<String> updateStatus(ProductRequest productRequest) {
+        try {
+            if (jwtRequestFilter.isAdmin()) {
+                Optional<Product> optionalProduct = productsRepository.findById(productRequest.getId());
+                if (!optionalProduct.isEmpty()) {
+                    productsRepository.updateProductStatus(productRequest.getStatus(), productRequest.getId());
+                    return CommerceUtil.getResponseMessage("Product Status Updated Successfully.", HttpStatus.OK);
+                } else
+                    return CommerceUtil.getResponseMessage(CommerceConstant.PRODUCT_ID_DOES_NOT_EXIST, HttpStatus.OK);
+            } else
+                return CommerceUtil.getResponseMessage(CommerceConstant.UNAUTHORIZED_ACCESS, HttpStatus.UNAUTHORIZED);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<List<ProductWrapper>> getByCategory(Long id) {
+        try {
+            return new ResponseEntity<>(productsRepository.getProductByCategory(id), HttpStatus.OK);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<ProductWrapper> getProductId(Long id) {
+        try {
+            return new ResponseEntity<>(productsRepository.getProductId(id), HttpStatus.OK);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return new ResponseEntity<>(new ProductWrapper(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private boolean validateProductRequest(ProductRequest productRequest, boolean validateId) {
