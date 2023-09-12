@@ -8,5 +8,6 @@ public class CommerceConstant {
     public static final String SUCCESSFULLY_REGISTER = "Successfully register.";
     public static final String UNAUTHORIZED_ACCESS = "Unauthorized access.";
     public static final String PRODUCT_ID_DOES_NOT_EXIST = "Product id does not exist.";
+    public static final String STORE_LOCATION = "C:\\Users\\Aptek\\IdeaProjects";
 
 }
