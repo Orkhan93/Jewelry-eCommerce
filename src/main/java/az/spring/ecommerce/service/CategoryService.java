@@ -1,7 +1,6 @@
 package az.spring.ecommerce.service;
 
 import az.spring.ecommerce.constant.CommerceConstant;
-import az.spring.ecommerce.mappers.CategoryMapper;
 import az.spring.ecommerce.model.Category;
 import az.spring.ecommerce.repository.CategoryRepository;
 import az.spring.ecommerce.request.CategoryRequest;
@@ -14,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,10 +23,8 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final JwtRequestFilter jwtRequestFilter;
-    private final CategoryMapper categoryMapper;
 
     public ResponseEntity<String> addCategory(CategoryRequest categoryRequest) {
-        try {
             if (jwtRequestFilter.isAdmin()) {
                 if (validateCategory(categoryRequest, false)) {
                     categoryRepository.save(getCategoryFromRequest(categoryRequest, false));
@@ -37,11 +33,7 @@ public class CategoryService {
             } else {
                 return CommerceUtil.getResponseMessage(CommerceConstant.UNAUTHORIZED_ACCESS, HttpStatus.UNAUTHORIZED);
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
         return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
-
     }
 
     private boolean validateCategory(CategoryRequest categoryRequest, boolean validateId) {
@@ -65,20 +57,14 @@ public class CategoryService {
     }
 
     public ResponseEntity<List<Category>> getAllCategory(String filterValue) {
-        try {
             if (!Strings.isNullOrEmpty(filterValue) && filterValue.equalsIgnoreCase("true")) {
                 log.info("Inside if");
-                return new ResponseEntity<List<Category>>(categoryRepository.getAllCategory(), HttpStatus.OK);
+                return new ResponseEntity<>(categoryRepository.getAllCategory(), HttpStatus.OK);
             }
             return new ResponseEntity<>(categoryRepository.findAll(), HttpStatus.OK);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return new ResponseEntity<List<Category>>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<String> updateCategory(CategoryRequest categoryRequest) {
-        try {
             if (jwtRequestFilter.isAdmin()) {
                 if (validateCategory(categoryRequest, true)) {
                     Optional<Category> optionalCategory = categoryRepository.findById(categoryRequest.getId());
@@ -94,10 +80,6 @@ public class CategoryService {
                 return CommerceUtil.getResponseMessage(CommerceConstant.INVALID_DATA, HttpStatus.BAD_REQUEST);
             } else
                 return CommerceUtil.getResponseMessage(CommerceConstant.UNAUTHORIZED_ACCESS, HttpStatus.UNAUTHORIZED);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }
