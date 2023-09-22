@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,11 +22,9 @@ import java.util.Optional;
 public class ProductService {
 
     private final ProductRepository productsRepository;
-    private final ProductMapper productMapper;
     private final JwtRequestFilter jwtRequestFilter;
 
     public ResponseEntity<String> addProduct(ProductRequest productRequest) {
-        try {
             if (jwtRequestFilter.isAdmin()) {
                 if (validateProductRequest(productRequest, false)) {
                     productsRepository.save(getProductFromRequest(productRequest, false));
@@ -36,23 +33,13 @@ public class ProductService {
                 return CommerceUtil.getResponseMessage(CommerceConstant.INVALID_DATA, HttpStatus.BAD_REQUEST);
             } else
                 return CommerceUtil.getResponseMessage(CommerceConstant.UNAUTHORIZED_ACCESS, HttpStatus.UNAUTHORIZED);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<List<ProductWrapper>> getAllProduct() {
-        try {
             return new ResponseEntity<>(productsRepository.getAllProduct(), HttpStatus.OK);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<String> updateProduct(ProductRequest productRequest) {
-        try {
             if (jwtRequestFilter.isAdmin()) {
                 if (validateProductRequest(productRequest, true)) {
                     Optional<Product> optionalProduct = productsRepository.findById(productRequest.getId());
@@ -67,14 +54,9 @@ public class ProductService {
                     return CommerceUtil.getResponseMessage(CommerceConstant.INVALID_DATA, HttpStatus.BAD_REQUEST);
             } else
                 return CommerceUtil.getResponseMessage(CommerceConstant.UNAUTHORIZED_ACCESS, HttpStatus.UNAUTHORIZED);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<String> deleteProduct(Long id) {
-        try {
             if (jwtRequestFilter.isAdmin()) {
                 Optional<Product> optionalProduct = productsRepository.findById(id);
                 if (!optionalProduct.isEmpty()) {
@@ -84,14 +66,9 @@ public class ProductService {
                     return CommerceUtil.getResponseMessage(CommerceConstant.PRODUCT_ID_DOES_NOT_EXIST, HttpStatus.OK);
             } else
                 return CommerceUtil.getResponseMessage(CommerceConstant.UNAUTHORIZED_ACCESS, HttpStatus.UNAUTHORIZED);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<String> updateStatus(ProductRequest productRequest) {
-        try {
             if (jwtRequestFilter.isAdmin()) {
                 Optional<Product> optionalProduct = productsRepository.findById(productRequest.getId());
                 if (!optionalProduct.isEmpty()) {
@@ -101,28 +78,14 @@ public class ProductService {
                     return CommerceUtil.getResponseMessage(CommerceConstant.PRODUCT_ID_DOES_NOT_EXIST, HttpStatus.OK);
             } else
                 return CommerceUtil.getResponseMessage(CommerceConstant.UNAUTHORIZED_ACCESS, HttpStatus.UNAUTHORIZED);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<List<ProductWrapper>> getByCategory(Long id) {
-        try {
             return new ResponseEntity<>(productsRepository.getProductByCategory(id), HttpStatus.OK);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return new ResponseEntity<>(new ArrayList<>(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public ResponseEntity<ProductWrapper> getProductId(Long id) {
-        try {
             return new ResponseEntity<>(productsRepository.getProductId(id), HttpStatus.OK);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return new ResponseEntity<>(new ProductWrapper(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private boolean validateProductRequest(ProductRequest productRequest, boolean validateId) {
