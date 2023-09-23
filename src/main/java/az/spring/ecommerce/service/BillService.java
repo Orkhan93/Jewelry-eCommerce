@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -212,17 +211,12 @@ public class BillService {
     }
 
     public ResponseEntity<String> deleteBill(Long id) {
-        try {
             Optional<Bill> optionalBill = billRepository.findById(id);
             if (!optionalBill.isEmpty()) {
                 billRepository.deleteById(id);
                 return CommerceUtil.getResponseMessage("Bill Deleted Successfully.", HttpStatus.OK);
             }
             return CommerceUtil.getResponseMessage("Bill id does not exist.", HttpStatus.OK);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return CommerceUtil.getResponseMessage(CommerceConstant.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }
