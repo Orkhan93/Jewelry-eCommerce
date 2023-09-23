@@ -1,7 +1,6 @@
 package az.spring.ecommerce.service;
 
 import az.spring.ecommerce.constant.CommerceConstant;
-import az.spring.ecommerce.mappers.ProductMapper;
 import az.spring.ecommerce.model.Category;
 import az.spring.ecommerce.model.Product;
 import az.spring.ecommerce.repository.ProductRepository;
