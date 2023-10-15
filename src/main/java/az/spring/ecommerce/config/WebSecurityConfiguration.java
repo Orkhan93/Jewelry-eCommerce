@@ -46,12 +46,13 @@ public class WebSecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        return httpSecurity.cors().and().csrf().disable()
+        return httpSecurity.csrf().disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/authenticate", "/user/signup" ,"/user/login","/").permitAll()
+                .requestMatchers("/user/signup", "/user/login", "/user/forgotPassword")
+                .permitAll()
                 .and()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/**")
+                .anyRequest()
                 .authenticated()
                 .and()
                 .sessionManagement()
